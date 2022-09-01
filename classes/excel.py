@@ -24,21 +24,22 @@ class ExcelClass:
 
     """
     # ? -> 1
-    def __init__(self, excelName, sheetName, coursePropTitleList):
+    def __init__(self, excelName, coursePropTitleList):
 
         self.excelName = excelName
-        self.sheetName = sheetName
+        # self.sheetName = sheetName
         self.coursePropTitleList = coursePropTitleList
 
         self.excelFile = xlsxwriter.Workbook(excelName)
-        self.worksheet = self.excelFile.add_worksheet(sheetName)
+        self.worksheet = []
+        # self.worksheet = self.excelFile.add_worksheet(sheetName)
     # ? -> 2
-    def initExcel(self):
-        col = 0
-        for title in self.coursePropTitleList:
+    # def initExcel(self):
+    #     col = 0
+    #     for title in self.coursePropTitleList:
 
-            self.worksheet.write(0, col, title)
-            col += 1
+    #         self.worksheet.write(0, col, title)
+    #         col += 1
     # ? -> 3
     def closeExcel(self):
         while True:
@@ -53,9 +54,9 @@ class ExcelClass:
                 if decision != 'n':
                     continue
     # ? -> 4
-    def storeDataInExcel(self, row, col, book_name, category, ISBN):
+    def storeDataInExcel(self, sheet_name, row, col, book_name, category, ISBN, book_price):
         try:
-            worksheet = self.excelFile.get_worksheet_by_name(self.sheetName)
+            worksheet = self.excelFile.get_worksheet_by_name(sheet_name)
             # for prop in course.getCourseList():
             worksheet.write(row, col, book_name)
             col += 1
@@ -63,7 +64,18 @@ class ExcelClass:
             col += 1
             worksheet.write(row, col, ISBN)
             col += 1
-            # worksheet.write(row, col, prop)
-            # col += 1
+            worksheet.write(row, col, book_price)
+            col += 1
         except:
             print('can not write to excel file course number' + str(row))
+
+    # ? -> 5
+    def addSheet(self, sheet_name, index):
+        # self.sheetName = sheetName
+        self.worksheet.append(self.excelFile.add_worksheet(sheet_name))
+
+        col = 0
+        for title in self.coursePropTitleList:
+
+            self.worksheet[index].write(0, col, title)
+            col += 1
