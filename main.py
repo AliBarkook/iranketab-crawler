@@ -31,10 +31,10 @@ baseUrl = 'https://www.iranketab.ir/'
 excel_col_title = ['نام کتاب', 'دسته بندی', 'شابک']
 
 # ? create instance from ecxel class
-excel = ExcelClass('excel/iranketab_books.xlsx', 'book_list', excel_col_title)
+excel = ExcelClass('excel/iranketab_books_2.xlsx', 'book_list', excel_col_title)
 excel.initExcel()
 
-siteUrl = 'https://shahreketabonline.com/Products/Category/216/%D8%B3%DB%8C%D9%86%D9%85%D8%A7'
+# siteUrl = 'https://shahreketabonline.com/Products/Category/216/%D8%B3%DB%8C%D9%86%D9%85%D8%A7'
 
 # ? create and return chrome driver
 def createChromeDriver():
@@ -56,129 +56,70 @@ def createChromeDriver():
 driver = createChromeDriver()
 driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
 
-# ? open chrome 
-driver.get(siteUrl)
 
-sleep(3)
 row = 1
 
 
-category_links = []
+category_links = [
+    'https://shahreketabonline.com/Products/Category/196/%D8%AF%D8%A7%D8%B3%D8%AA%D8%A7%D9%86',
+    'https://shahreketabonline.com/Products/Category/288/%DA%A9%D9%88%D8%AF%DA%A9-%D9%88-%D9%86%D9%88%D8%AC%D9%88%D8%A7%D9%86',
+    'https://shahreketabonline.com/Products/Category/197/%D8%A7%D8%AF%D8%A8%DB%8C%D8%A7%D8%AA',
+    'https://shahreketabonline.com/Products/Category/201/%D9%87%D9%86%D8%B1',
+    'https://shahreketabonline.com/Products/Category/203/%D8%B1%D9%88%D8%A7%D9%86-%D8%B4%D9%86%D8%A7%D8%B3%DB%8C',
+    'https://shahreketabonline.com/Products/Category/204/%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D8%AC%D8%AA%D9%85%D8%A7%D8%B9%DB%8C-%D9%88-%D8%B3%DB%8C%D8%A7%D8%B3%DB%8C',
+    'https://shahreketabonline.com/Products/Category/226/%D8%AF%DB%8C%D9%86-%D9%88-%D9%85%D8%B0%D9%87%D8%A8',
+    'https://shahreketabonline.com/Products/Category/227/%D9%81%D9%84%D8%B3%D9%81%D9%87-%D9%88-%D8%B9%D8%B1%D9%81%D8%A7%D9%86',
+    'https://shahreketabonline.com/Products/Category/228/%D8%AA%D8%A7%D8%B1%DB%8C%D8%AE',
+    'https://shahreketabonline.com/Products/Category/288/%DA%A9%D9%88%D8%AF%DA%A9-%D9%88-%D9%86%D9%88%D8%AC%D9%88%D8%A7%D9%86',
+]
 
-total_page = driver.find_element(By.XPATH, "//*[@id='ProductsTable']/div[2]/div/ul/li[6]/a").text
+
+for catgory in category_links:
+    # ? open chrome 
+    driver.get(catgory)
+
+    sleep(3)    
+
+    total_page = driver.find_element(By.XPATH, "//*[@id='ProductsTable']/div[2]/div/ul/li[6]/a").text
+    header = driver.find_elements(By.CLASS_NAME, "header")[0]
+    category_title = header.find_elements(By.CLASS_NAME, "title")[0].text
 
 
-for page_num in range(int(total_page)):
+    print('start crawl category: ' + category_title)
+    for page_num in range(int(total_page)):
 
-    # paginator = driver.find_element(By.CLASS_NAME, "pagination")
+        # paginator = driver.find_element(By.CLASS_NAME, "pagination")
 
-    sleep(3)
-    try:
-        next_page_btn = driver.find_element(By.XPATH, "//a[text()='بعدی']")
-    except:
-        break
-    book_card_list = driver.find_elements(By.CLASS_NAME, "ProductWrapper")
 
-    for book_card in book_card_list:
-        book_name = book_card.find_elements(By.CLASS_NAME, "text")[0].text
-        book_ISBN = ''
+        sleep(3)
         try:
-            book_ISBN = (book_card.find_elements(By.CLASS_NAME, "book-image")[0].get_attribute("data-src").split('/')[3]).split('.')[0]
+            next_page_btn = driver.find_element(By.XPATH, "//a[text()='بعدی']")
         except:
-            book_ISBN = 'نامشخص'
-            
-        # print(book_name)
-        # print(book_ISBN)
+            break
+        book_card_list = driver.find_elements(By.CLASS_NAME, "ProductWrapper")
 
-        excel.storeDataInExcel(row, 0, book_name, '0', book_ISBN)
-        row += 1
+        for book_card in book_card_list:
+            book_name = book_card.find_elements(By.CLASS_NAME, "text")[0].text
+            book_ISBN = ''
+            try:
+                book_ISBN = (book_card.find_elements(By.CLASS_NAME, "book-image")[0].get_attribute("data-src").split('/')[3]).split('.')[0]
+            except:
+                book_ISBN = 'نامشخص'
+                
+            # print(book_name)
+            # print(book_ISBN)
 
-    print('page ' + str(page_num+1) + ' data recieved!')
-    try:
-        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((next_page_btn))).click()
-    except:
-        print('can not get page ' + str(page_num))
-        continue
+            excel.storeDataInExcel(row, 0, book_name, category_title, book_ISBN)
+            row += 1
+
+        print('page ' + str(page_num+1) + ' data recieved!')
+        try:
+            WebDriverWait(driver, 20).until(EC.element_to_be_clickable((next_page_btn))).click()
+        except:
+            print('can not get page ' + str(page_num))
+            continue
+
+
 
 driver.close()
 excel.closeExcel()
-
-# ? find cars in brand list
-# for option in all_options:
-    
-#     carBrand = option.find_element(By.CLASS_NAME, "title").text
-#     if carName in carBrand:
-#         carEnglishName = option.find_element(By.TAG_NAME, "input").get_attribute("value")
-
-#         # ? create excel file and worksheet
-#         excel = excel_class('excels/bama_cars_' + carEnglishName + '.xlsx', 'bama_car_list')
-#         excel.initExcel()
-
-#         # ? click car checkbox
-#         checkbox = option.find_element(By.TAG_NAME, "label")
-#         checkbox.click()
-
-#         # ? click submit button to apply filter changes
-#         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CLASS_NAME, 'apply'))).click()
-
-#         # ? wait 3 second to apply change
-#         sleep(3)
-
-#         total_page = 1
-#         while True:
-#             print('loading page ' + str(total_page))
-#             lenOfPage = driver.execute_script("window.scrollTo(0, document.body.scrollHeight);var lenOfPage=document.body.scrollHeight;return lenOfPage;")
-            
-#             # ? wait 5 second to get cars by service(http request)
-#             sleep(5)
-
-
-#             lastCount = lenOfPage
-#             lenOfPage = driver.execute_script("window.scrollTo(0, document.body.scrollHeight);var lenOfPage=document.body.scrollHeight;return lenOfPage;")
-
-#             # ? check for last page
-#             if lastCount == lenOfPage:
-#                 break
-#             else:
-#                 total_page+=1
-
-
-
-#         break
-
-
-
-
-
-# ? request to get book link
-def getBookLinks(link):
-    try:
-
-        # print('getting course number ' + str(index) + '\n')
-
-        courseResponse = requests.get(link)
-        courseHtml = BeautifulSoup(courseResponse.text, 'html.parser')
-
-        # print(courseHtml)
-        # ? scrap required data from DOM
-        links = courseHtml.find_all(class_='text')
-
-        print(links)
-        for link in links:
-            print(link)
-            excel.storeDataInExcel()
-
-
-        
-
-        return
-    except:
-        # print('can`t get course number ' + str(index))
-        return
-
-
-# for x in range(100):
-#     print(x)
-#     sleep(3 - time() % 1)
-#     # getBookLinks('https://www.iranketab.ir/tag/285-dramatic-literature?Page=' + str(x+2))
-# getBookLinks('https://shahreketabonline.com/Products/Category/216/%D8%B3%DB%8C%D9%86%D9%85%D8%A7')
