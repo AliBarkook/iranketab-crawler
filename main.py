@@ -33,7 +33,7 @@ from classes.excel import ExcelClass
 excel_col_title = ['نام کتاب', 'دسته بندی', 'شابک', 'قیمت']
 
 # ? create instance from ecxel class
-excel = ExcelClass('excel/iranketab_adabi.xlsx', excel_col_title)
+excel = ExcelClass('excel/iranketab_honar.xlsx', excel_col_title)
 # excel.initExcel()
 
 siteUrl = 'https://shahreketabonline.com/'
@@ -81,6 +81,15 @@ adabi_category = [
     'https://shahreketabonline.com/Products/Category/207/%D9%85%D8%AA%D9%88%D9%86-%DA%A9%D9%87%D9%86'
 ]
 
+# ? honar
+honar_category = [
+    'https://shahreketabonline.com/Products/Category/216/%D8%B3%DB%8C%D9%86%D9%85%D8%A7',
+    'https://shahreketabonline.com/Products/Category/217/%D9%86%D9%85%D8%A7%DB%8C%D8%B4',
+    'https://shahreketabonline.com/Products/Category/213/%D9%87%D9%86%D8%B1%D9%87%D8%A7%DB%8C-%D8%AA%D8%AC%D8%B3%D9%85%DB%8C',
+    'https://shahreketabonline.com/Products/Category/215/%D9%85%D8%B9%D9%85%D8%A7%D8%B1%DB%8C',
+    'https://shahreketabonline.com/Products/Category/212/%D9%87%D9%86%D8%B1',
+]
+
 
 
 def search_in_category(category_url, index):
@@ -92,6 +101,8 @@ def search_in_category(category_url, index):
     total_page = driver.find_elements(By.CLASS_NAME, "page-item")[5].text
     header = driver.find_elements(By.CLASS_NAME, "header")[0]
     category_title = header.find_elements(By.CLASS_NAME, "title")[0].text
+    category_title = category_title.split('کتاب‌های')[1]
+
 
 
     print('starting to crawl category: ' + category_title)
@@ -107,48 +118,59 @@ def search_in_category(category_url, index):
     for page_num in range(int(total_page)):
 
 
-
-        sleep(3)
-        try:
-            next_page_btn = driver.find_element(By.XPATH, "//a[text()='بعدی']")
-        except:
-            break
-        book_card_list = driver.find_elements(By.CLASS_NAME, "ProductWrapper")
-
-        for book_card in book_card_list:
-            book_name = book_card.find_elements(By.CLASS_NAME, "text")[0].text
-            book_ISBN = ''
+        while True:
             try:
-                book_ISBN = (book_card.find_elements(By.CLASS_NAME, "book-image")[0].get_attribute("data-src").split('/')[3]).split('.')[0]
-            except:
-                book_ISBN = 'نامشخص'
 
-            book_price = ''
-
-            try:
-                book_price = book_card.find_elements(By.CLASS_NAME, "price")[0].text
-            except:
-                book_price = 'ناموجود'
-
+                sleep(3)
                 
-            # print(book_name)
-            # print(book_ISBN)
+                try:
+                    next_page_btn = driver.find_element(By.XPATH, "//a[text()='بعدی']")
+                except:
+                    break
+                book_card_list = driver.find_elements(By.CLASS_NAME, "ProductWrapper")
 
-            excel.storeDataInExcel(category_title, row, 0, book_name, category_title, book_ISBN, book_price)
-            row = row + 1
+                for book_card in book_card_list:
+                    book_name = book_card.find_elements(By.CLASS_NAME, "text")[0].text
+                    book_ISBN = ''
+                    try:
+                        book_ISBN = (book_card.find_elements(By.CLASS_NAME, "book-image")[0].get_attribute("data-src").split('/')[3]).split('.')[0]
+                    except:
+                        book_ISBN = 'نامشخص'
 
-        print('page ' + str(page_num+1) + ' data recieved!')
-        try:
-            WebDriverWait(driver, 20).until(EC.element_to_be_clickable((next_page_btn))).click()
-        except:
-            print('can not get page ' + str(page_num))
-            continue
+                    book_price = ''
+
+                    try:
+                        book_price = book_card.find_elements(By.CLASS_NAME, "price")[0].text
+                    except:
+                        book_price = 'ناموجود'
+
+                        
+                    # print(book_name)
+                    # print(book_ISBN)
+
+                    excel.storeDataInExcel(category_title, row, 0, book_name, category_title, book_ISBN, book_price)
+                    row = row + 1
+
+                print('page ' + str(page_num+1) + ' data recieved!')
+                try:
+                    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((next_page_btn))).click()
+                except:
+                    print('can not get page ' + str(page_num))
+                    continue
+
+                break
+            except:
+                decision = input("error raised while crawling page: " + str(page_num+1) + "\n type y/n for retry ir cancel")
+                if decision == 'y':
+                    continue
+
+       
 
 
 
 
 index = 0
-for catgory in adabi_category:
+for catgory in honar_category:
     search_in_category(catgory, index)
     index = index + 1
 

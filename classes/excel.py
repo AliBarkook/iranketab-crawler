@@ -54,7 +54,7 @@ class ExcelClass:
                 if decision != 'n':
                     continue
     # ? -> 4
-    def storeDataInExcel(self, sheet_name, row, col, book_name, category, ISBN, book_price):
+    def storeDataInExcel(self, sheet_name, row, col, book_name, category, book_price, attr):
         try:
             worksheet = self.excelFile.get_worksheet_by_name(sheet_name)
             # for prop in course.getCourseList():
@@ -62,9 +62,9 @@ class ExcelClass:
             col += 1
             worksheet.write(row, col, category)
             col += 1
-            worksheet.write(row, col, ISBN)
-            col += 1
             worksheet.write(row, col, book_price)
+            col += 1
+            worksheet.write(row, col, attr)
             col += 1
         except:
             print('can not write to excel file course number' + str(row))
