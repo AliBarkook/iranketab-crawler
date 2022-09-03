@@ -33,7 +33,7 @@ from classes.excel import ExcelClass
 excel_col_title = ['نام کتاب', 'دسته بندی', 'شابک', 'قیمت']
 
 # ? create instance from ecxel class
-excel = ExcelClass('excel/iranketab_dastan.xlsx', excel_col_title)
+excel = ExcelClass('excel/iranketab_adabi.xlsx', excel_col_title)
 # excel.initExcel()
 
 siteUrl = 'https://shahreketabonline.com/'
@@ -74,22 +74,14 @@ dastan_category = [
     'https://shahreketabonline.com/Products/Category/200/%D8%AF%D8%A7%D8%B3%D8%AA%D8%A7%D9%86-%D8%AC%D9%87%D8%A7%D9%86'
 ]
 
-
-category_links = [
-    'https://shahreketabonline.com/Products/Category/196/%D8%AF%D8%A7%D8%B3%D8%AA%D8%A7%D9%86',
-    'https://shahreketabonline.com/Products/Category/288/%DA%A9%D9%88%D8%AF%DA%A9-%D9%88-%D9%86%D9%88%D8%AC%D9%88%D8%A7%D9%86',
-    'https://shahreketabonline.com/Products/Category/197/%D8%A7%D8%AF%D8%A8%DB%8C%D8%A7%D8%AA',
-    'https://shahreketabonline.com/Products/Category/201/%D9%87%D9%86%D8%B1',
-    'https://shahreketabonline.com/Products/Category/203/%D8%B1%D9%88%D8%A7%D9%86-%D8%B4%D9%86%D8%A7%D8%B3%DB%8C',
-    'https://shahreketabonline.com/Products/Category/204/%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D8%AC%D8%AA%D9%85%D8%A7%D8%B9%DB%8C-%D9%88-%D8%B3%DB%8C%D8%A7%D8%B3%DB%8C',
-    'https://shahreketabonline.com/Products/Category/226/%D8%AF%DB%8C%D9%86-%D9%88-%D9%85%D8%B0%D9%87%D8%A8',
-    'https://shahreketabonline.com/Products/Category/227/%D9%81%D9%84%D8%B3%D9%81%D9%87-%D9%88-%D8%B9%D8%B1%D9%81%D8%A7%D9%86',
-    'https://shahreketabonline.com/Products/Category/288/%DA%A9%D9%88%D8%AF%DA%A9-%D9%88-%D9%86%D9%88%D8%AC%D9%88%D8%A7%D9%86',
-    'https://shahreketabonline.com/Products/Category/228/%D8%AA%D8%A7%D8%B1%DB%8C%D8%AE',
+# ? adabi
+adabi_category = [
+    'https://shahreketabonline.com/Products/Category/206/%D9%86%D9%82%D8%AF-%D8%A7%D8%AF%D8%A8%DB%8C',
+    'https://shahreketabonline.com/Products/Category/208/%D8%AE%D8%A7%D8%B7%D8%B1%D8%A7%D8%AA-%D9%88-%D8%B3%D9%81%D8%B1%D9%86%D8%A7%D9%85%D9%87-%D9%88-%D8%B3%D8%B1%DA%AF%D8%B0%D8%B4%D8%AA%D9%86%D8%A7%D9%85%D9%87',
+    'https://shahreketabonline.com/Products/Category/207/%D9%85%D8%AA%D9%88%D9%86-%DA%A9%D9%87%D9%86'
 ]
 
 
-    
 
 def search_in_category(category_url, index):
     driver.get(category_url)
@@ -102,18 +94,17 @@ def search_in_category(category_url, index):
     category_title = header.find_elements(By.CLASS_NAME, "title")[0].text
 
 
-    print(category_title)
-    print(index)
+    print('starting to crawl category: ' + category_title)
 
     excel.addSheet(category_title, index)
 
     # print(category_title)
 
 
-    # print(total_page)
+    print('total page is: ' + total_page)
     
     row = 1
-    for page_num in range(2):
+    for page_num in range(int(total_page)):
 
 
 
@@ -157,7 +148,7 @@ def search_in_category(category_url, index):
 
 
 index = 0
-for catgory in dastan_category:
+for catgory in adabi_category:
     search_in_category(catgory, index)
     index = index + 1
 
