@@ -20,7 +20,7 @@ from time import time, sleep
 import json
 
 
-baseUrl = "https://www.30book.com/book/"
+baseUrl = "https://www.30book.com"
 total_book = 137360
 
 
@@ -78,11 +78,40 @@ def create_dictionary():
 
     return dictionary
 
+
+def get_text(li):
+    return li.get_text().strip()
+  
+# We double all numbers using map()
+
 # ? find attribute value base on persian name
 def find_attribute(persian_title, key_list, value_list):
     try:
-        index = key_list.index(persian_title)
-        return value_list[index]
+        key_list_mapped = list(map(get_text, key_list))
+        index = key_list_mapped.index(persian_title)
+
+        if (persian_title == 'موضوع اصلی' or persian_title == 'موضوع فرعی' or persian_title == 'نشر'):
+
+            key_value_object = {
+                "name" : (value_list[index]).get_text().strip() ,
+                "URL" : baseUrl + value_list[index].find("a").get('href')
+            }
+
+            return key_value_object
+
+        elif (persian_title == 'نویسنده' or persian_title == 'مترجم'):
+
+            key_value_array = []
+            for a_tag in value_list[index].find_all("a"):
+
+                key_value_object = {
+                    "name" : a_tag.get_text().strip() ,
+                    "URL" : baseUrl + a_tag.get('href')
+                }
+                key_value_array.append(key_value_object)
+
+            return key_value_array
+        return (value_list[index]).get_text().strip()
     except:
         return 'نامشخص'
  
@@ -91,11 +120,11 @@ json_array = []
  
 
 # row = 1
-for book_index in range(5):
+for book_index in range(1000):
     print('getting index '+ str(book_index+1))
 
     try:
-        url = baseUrl + str(book_index+1)
+        url = baseUrl + '/book/' + str(book_index+1)
         book_detail_html = requests.get(url)
         beauty_html = BeautifulSoup(book_detail_html.text, 'html.parser')
 
@@ -118,10 +147,10 @@ for book_index in range(5):
 
                     # ? for key
                     if index%2 == 0:
-                        attribute_key.append(attr)
+                        attribute_key.append(li)
                     # ? for value
                     else:
-                        attribute_value.append(attr)
+                        attribute_value.append(li)
 
 
                 index += 1
@@ -131,9 +160,6 @@ for book_index in range(5):
         # print(attribute_key)
         # print(attribute_value)
 
-        string_attribute = ''
-        for i, attr in enumerate(attribute_key):
-            string_attribute += attribute_key[i] + ': ' + attribute_value[i] + ' | '
 
         price = ''
 
@@ -168,6 +194,13 @@ for book_index in range(5):
         book_dic["properties"]["published"] = find_attribute('نوبت چاپ', attribute_key, attribute_value)
         book_dic["properties"]["publishedYear"] = find_attribute('سال انتشار', attribute_key, attribute_value)
 
+        book_dic["properties"]["mainSubject"] = find_attribute('موضوع اصلی', attribute_key, attribute_value)
+        book_dic["properties"]["subSubject"] = find_attribute('موضوع فرعی', attribute_key, attribute_value)
+        book_dic["properties"]["publisher"] = find_attribute('نشر', attribute_key, attribute_value)
+        book_dic["properties"]["author"] = find_attribute('نویسنده', attribute_key, attribute_value)
+        book_dic["properties"]["translator"] = find_attribute('مترجم', attribute_key, attribute_value)
+
+
         
 
         json_array.append(book_dic)
@@ -177,7 +210,7 @@ for book_index in range(5):
         continue
 
 
-with open('book.json', 'w') as f:
+with open('book_ 1.json', 'w') as f:
   json.dump(json_array, f, ensure_ascii=False)
 
 # excel.closeExcel()
