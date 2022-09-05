@@ -30,6 +30,36 @@ total_book = 137360
 # excel = ExcelClass('excel/30_book.xlsx', excel_col_title)
 # excel.addSheet('book', 0)
 
+def save_json(file_name, json_array):
+    with open(file_name, 'w') as f:
+        json.dump(json_array, f, ensure_ascii=False)
+
+    print('json file saved')
+
+# ? set interval to log active thread count every 1 second
+def interval():
+
+    while True:
+        sleep(1 - time() % 1)
+
+        if (threading.active_count() <= 2):
+            json_name = 'book.json'
+            save_json(json_name, json_array)
+
+            break
+
+
+        print('number of active thread is: ' + str(threading.active_count()))
+
+class BookThreadClass (threading.Thread):
+   def __init__(self, book_index):
+      threading.Thread.__init__(self)
+      self.book_index = book_index
+   def run(self):
+      return get_book_info(int(self.book_index))
+
+
+# ? dictionary template
 def create_dictionary():
     # Data to be written
     dictionary = {
@@ -79,10 +109,11 @@ def create_dictionary():
     return dictionary
 
 
+
+# ? map li tag to it text
 def get_text(li):
     return li.get_text().strip()
   
-# We double all numbers using map()
 
 # ? find attribute value base on persian name
 def find_attribute(persian_title, key_list, value_list):
@@ -114,17 +145,14 @@ def find_attribute(persian_title, key_list, value_list):
         return (value_list[index]).get_text().strip()
     except:
         return 'نامشخص'
- 
 
 json_array = []
  
 
-# row = 1
-for book_index in range(1000):
-    print('getting index '+ str(book_index+1))
 
+def get_book_info(book_index):
     try:
-        url = baseUrl + '/book/' + str(book_index+1)
+        url = baseUrl + '/book/' + str(book_index)
         book_detail_html = requests.get(url)
         beauty_html = BeautifulSoup(book_detail_html.text, 'html.parser')
 
@@ -135,6 +163,7 @@ for book_index in range(1000):
         index = 0
         attribute_key = []
         attribute_value = []
+
         # ? have tow col for attrs
         for attribute_column in attribute_container.find_all(class_="uk-grid-collapse"):
 
@@ -156,11 +185,6 @@ for book_index in range(1000):
                 index += 1
 
 
-
-        # print(attribute_key)
-        # print(attribute_value)
-
-
         price = ''
 
         try:
@@ -168,8 +192,6 @@ for book_index in range(1000):
         except:
             price = 'ناموجود'
         
-
-
 
         # excel.storeDataInExcel('book', row, 0, book_title, '', price, string_attribute)
         # row += 1
@@ -201,20 +223,30 @@ for book_index in range(1000):
         book_dic["properties"]["translator"] = find_attribute('مترجم', attribute_key, attribute_value)
 
 
-        
-
         json_array.append(book_dic)
 
+
+        return book_dic
     except:
         print('can not get index ' + str(book_index+1))
-        continue
+        # return ''
 
 
-with open('book_ 1.json', 'w') as f:
-  json.dump(json_array, f, ensure_ascii=False)
+for thousand in range(1):
+
+    for book_index in range(1000):
+        index = str(((thousand)*1000) + (book_index+1))
+        print('getting index '+ index)
+        thread = BookThreadClass(index)
+        thread.start()
+
+
+
+
+
+interval()
+
 
 # excel.closeExcel()
 
 
-
-    
