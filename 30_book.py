@@ -1,6 +1,7 @@
 
 # ! class
 
+# from asyncio.windows_events import NULL
 from pickle import FALSE
 from classes.book import BookClass
 from classes.excel import ExcelClass
@@ -30,6 +31,16 @@ total_book = 137360
 # excel = ExcelClass('excel/30_book.xlsx', excel_col_title)
 # excel.addSheet('book', 0)
 
+# ? get 20,0000 data
+def get_a_thousand(twenty_thousand):
+
+    for book_index in range(20000):
+        index = str(((twenty_thousand)*20000) + (book_index+1))
+        print('getting index '+ index)
+        thread = BookThreadClass(index)
+        thread.start()
+
+
 def save_json(file_name, json_array):
     with open(file_name, 'w') as f:
         json.dump(json_array, f, ensure_ascii=False)
@@ -38,15 +49,22 @@ def save_json(file_name, json_array):
 
 # ? set interval to log active thread count every 1 second
 def interval():
-
+    file_index = 0
     while True:
         sleep(1 - time() % 1)
 
         if (threading.active_count() <= 2):
-            json_name = 'book.json'
+
+            json_name = 'final-data/book_0_20000.json'
             save_json(json_name, json_array)
 
-            break
+
+            if (file_index<0):
+                file_index += 1
+                get_a_thousand(file_index)
+
+            else:
+                break
 
 
         print('number of active thread is: ' + str(threading.active_count()))
@@ -67,6 +85,9 @@ def create_dictionary():
         "URL" : "" ,
         "title" : "" ,
         "price" : "" ,
+        "description" : "" ,
+        "image" : "" ,
+        "description" : "" ,
         "properties" : {
             "goodsType" : "",
             "category" : "" ,
@@ -130,6 +151,20 @@ def find_attribute(persian_title, key_list, value_list):
 
             return key_value_object
 
+        elif (persian_title == 'وزن'):
+            try:
+                return (value_list[index]).get_text().strip().replace(' گرم', '')
+            except:
+                return (value_list[index]).get_text().strip()
+
+        elif (persian_title == 'تعداد صفحه'):
+            try:
+                return (value_list[index]).get_text().strip().replace(' صفحه', '')
+            except:
+                return (value_list[index]).get_text().strip()
+
+
+
         elif (persian_title == 'نویسنده' or persian_title == 'مترجم'):
 
             key_value_array = []
@@ -142,9 +177,10 @@ def find_attribute(persian_title, key_list, value_list):
                 key_value_array.append(key_value_object)
 
             return key_value_array
+
         return (value_list[index]).get_text().strip()
     except:
-        return 'نامشخص'
+        return None
 
 json_array = []
  
@@ -188,9 +224,23 @@ def get_book_info(book_index):
         price = ''
 
         try:
-            price = beauty_html.find(class_='product-slash-price').get_text()
+            price = beauty_html.find(class_='product-slash-price').get_text().replace('\n', '')
         except:
-            price = 'ناموجود'
+            price = None
+
+        description = ''
+
+        try:
+            description = beauty_html.find(class_='product-description-section-text').get_text().strip()
+        except:
+            description = None
+
+        image = 'https://www.30book.com/Media/Book/' + str(book_index) + '.jpg'
+
+        # try:
+        #     image = baseUrl + beauty_html.find(class_='fluid-image').get('src')
+        # except:
+        #     image = None
         
 
         # excel.storeDataInExcel('book', row, 0, book_title, '', price, string_attribute)
@@ -202,7 +252,10 @@ def get_book_info(book_index):
         book_dic["title"] = book_title
         book_dic["price"] = price
         book_dic["URL"] = url
-        book_dic["id"] = str(book_index+1)
+        book_dic["id"] = str(book_index)
+        book_dic["description"] = description
+        book_dic["image"] = image
+
 
 
         book_dic["properties"]["goodsType"] = find_attribute('دسته بندی', attribute_key, attribute_value)
@@ -232,17 +285,12 @@ def get_book_info(book_index):
         # return ''
 
 
-for thousand in range(1):
-
-    for book_index in range(1000):
-        index = str(((thousand)*1000) + (book_index+1))
-        print('getting index '+ index)
-        thread = BookThreadClass(index)
-        thread.start()
 
 
 
 
+# ! entry point
+get_a_thousand(0)
 
 interval()
 
