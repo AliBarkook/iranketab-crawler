@@ -34,11 +34,18 @@ total_book = 137360
 # ? get 20,0000 data
 def get_a_thousand(twenty_thousand):
 
-    for book_index in range(20000):
-        index = str(((twenty_thousand)*20000) + (book_index+1))
+    for book_index in range(5000):
+        sleep(0.3)
+        # if (threading.active_count() < 400):
+
+        # print('number of active thread is: ' + str(threading.active_count()))
+        index = str(((twenty_thousand)*5000) + (book_index+1))
         print('getting index '+ index)
         thread = BookThreadClass(index)
         thread.start()
+
+        # else:
+        #     sleep(10)
 
 
 def save_json(file_name, json_array):
@@ -55,7 +62,7 @@ def interval():
 
         if (threading.active_count() <= 2):
 
-            json_name = 'final-data/book_0_20000.json'
+            json_name = 'final-data/book_5000_10000.json'
             save_json(json_name, json_array)
 
 
@@ -290,7 +297,7 @@ def get_book_info(book_index):
 
 
 # ! entry point
-get_a_thousand(0)
+get_a_thousand(1)
 
 interval()
 
